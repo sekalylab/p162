@@ -73,5 +73,5 @@ wilcox.test(formula = `Neutralization SIVmac251.6.ID#1050 (Tier1)` ~
 
 Print session info
 ```{r, session-info}
-sessionInfo(/)
+sessionInfo()
 ```
