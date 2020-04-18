@@ -6,8 +6,7 @@ output: github_documents
 ---
 
 Loading require packages
-
-```r
+```{r, loading-packages}
 suppressPackageStartupMessages(library(package = "knitr"))
 suppressPackageStartupMessages(library(package = "Biobase"))
 suppressPackageStartupMessages(library(package = "impute"))
@@ -16,24 +15,21 @@ suppressPackageStartupMessages(library(package = "tidyverse"))
 ```
 
 set default options/variables
-
-```r
+```{r, global-variables}
 workDir <- dirname(getwd())
 opts_chunk$set(tidy = FALSE, fig.path = "../figure/")
 options(stringsAsFactors = FALSE, width = 80, readr.num_columns = 0)
 ```
 
 read non-normalized matrix
-
-```r
+```{r, read-raw-matrix, warning=FALSE}
 rawFile <- file.path(workDir,
   "input/GA_illumina_expression.p162.matrix_non_norm.csv")
 rawMat <- read_csv(file = rawFile, progress = FALSE)
 ```
 
 read arrays annotation
-
-```r
+```{r, reading-arrays-annotation}
 arraysAnnotFile <- file.path(workDir,
                              "input/GA_illumina_expression.p162.metadata.csv")
 arraysAnnotation <- read_csv(file = arraysAnnotFile, progress = FALSE)
@@ -53,8 +49,7 @@ names(arraysAnnotation) <- gsub(pattern = "^[^:]+: (.+)$",
 ```
 
 read features annotation
-
-```r
+```{r, reading-features-annotation}
 featuresAnnotFile <- file.path(workDir,
                                "input/Illumina_HumanHT12_V4.rheMac3.chip")
 featuresAnnotation <- read_tsv(file = featuresAnnotFile, progress = FALSE) %>%
@@ -63,8 +58,7 @@ rownames(featuresAnnotation) <- featuresAnnotation$IlmnID
 ```
 
 create non-normalized ExpressionSet
-
-```r
+```{r, create-raw-eset}
 # format raw matrix
 rNames <- rawMat$"ID_REF"
 rawMat <- rawMat[, -grep(pattern = "ID_REF|Detection Pval",
@@ -87,8 +81,7 @@ save(esetRaw, file = file.path(workDir, "output/p162.esetRaw.RData"))
 ```
 
 normalizing raw expression
-
-```r
+```{r, normalization}
 eset <- esetRaw
 # order esetRaw by idat file name and features by ProbeID
 eset <- eset[order(as.numeric(fData(eset)$ProbeID)),
@@ -128,8 +121,7 @@ save(eset, file = file.path(workDir, "output/p162.eset.RData"))
 ```
 
 create a postvax-prevax ExpressionSet
-
-```r
+```{r, substracted-eset}
 # identify complete pair of postvax-prevax stimulated samples
 flag <- pData(eset) %>%
   select(`Sample name`,
@@ -145,8 +137,7 @@ save(esetBaselined, file = file.path(workDir, "output/p162.esetBaselined.RData")
 ```
 
 regression analysis: vaccine-conferred protection
-
-```r
+```{r, deg-protection}
 fits <- list()
 # linear regressions on pre- and post-vax expression
 # seperated by prime/immunization/timepoint
@@ -215,43 +206,6 @@ save(fits, file = file.path(workDir, file.path("output/p162.fits.RData")))
 ```
 
 print session info
-
-```r
+```{r, session-info}
 sessionInfo()
-```
-
-```
-## R version 3.5.1 (2018-07-02)
-## Platform: x86_64-apple-darwin18.0.0 (64-bit)
-## Running under: macOS  10.14.1
-## 
-## Matrix products: default
-## BLAS: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
-## LAPACK: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLAPACK.dylib
-## 
-## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
-## 
-## attached base packages:
-## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
-## [8] base     
-## 
-## other attached packages:
-##  [1] bindrcpp_0.2.2      forcats_0.3.0       stringr_1.3.1      
-##  [4] dplyr_0.7.7         purrr_0.2.5         readr_1.1.1        
-##  [7] tidyr_0.8.2         tibble_1.4.2        ggplot2_3.1.0      
-## [10] tidyverse_1.2.1     limma_3.38.0        impute_1.56.0      
-## [13] Biobase_2.42.0      BiocGenerics_0.28.0 knitr_1.20         
-## 
-## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.19     cellranger_1.1.0 pillar_1.3.0     compiler_3.5.1  
-##  [5] plyr_1.8.4       bindr_0.1.1      tools_3.5.1      lubridate_1.7.4 
-##  [9] jsonlite_1.5     evaluate_0.12    nlme_3.1-137     gtable_0.2.0    
-## [13] lattice_0.20-35  pkgconfig_2.0.2  rlang_0.3.0.1    cli_1.0.1       
-## [17] rstudioapi_0.8   haven_1.1.2      withr_2.1.2      xml2_1.2.0      
-## [21] httr_1.3.1       hms_0.4.2        grid_3.5.1       tidyselect_0.2.5
-## [25] glue_1.3.0       R6_2.3.0         readxl_1.1.0     modelr_0.1.2    
-## [29] magrittr_1.5     backports_1.1.2  scales_1.0.0     rvest_0.3.2     
-## [33] assertthat_0.2.0 colorspace_1.3-2 stringi_1.2.4    lazyeval_0.2.1  
-## [37] munsell_0.5.0    broom_0.5.0      crayon_1.3.4
 ```
