@@ -1,0 +1,71 @@
+---
+title: R code to reproduce Fig2g of Vaccari M. et al., 2016
+author: Slim Fourati
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: github_documents
+---
+
+Loading require packages
+```{r, load-packages}
+suppressPackageStartupMessages(library(package = "knitr"))
+suppressPackageStartupMessages(library(package = "ggbeeswarm"))
+suppressPackageStartupMessages(library(package = "tidyverse"))
+```
+
+Set default options/variables
+```{r, session-options}
+workDir <- dirname(getwd())
+opts_chunk$set(tidy = FALSE, fig.path = "../figure/")
+options(stringsAsFactors  = FALSE,
+	width             = 80,
+	readr.num_columns = 0)
+```
+
+Read ADCC data
+```{r, read-nab}
+adccFile <- file.path(workDir,
+		     "input/20200418_P162.Fig2g.input.csv")
+adccDF <- read_csv(file = adccFile)
+```
+
+Plot jitter plot
+```{r, fig2g, fig.width=4, fig.height=5}
+plotDF <- adccDF %>%
+  mutate(Vaccine = c("ALVAC/SIV +gp120-MF59" = "gp120 MF59 ALVAC-SIV",
+		     "ALVAC/SIV +gp120-ALUM" = "gp120 alum ALVAC-SIV",
+		     "NAIVE" = "Controls",
+		     "ALUM" = "Controls",
+		     "ALVAC MOCK MF59" = "Controls",
+		     "MF59" = "Controls")[Vaccine],
+	 Vaccine = factor(Vaccine,
+			  levels = c("gp120 MF59 ALVAC-SIV",
+				     "gp120 alum ALVAC-SIV",
+				     "Controls")),
+	 `Serum-Guroff.ADCC titers` = as.numeric(`Serum-Guroff.ADCC titers`))
+
+ggplot(data = plotDF,
+       mapping = aes(x = Vaccine, y = `Serum-Guroff.ADCC titers`)) +
+     geom_beeswarm(mapping = aes(color = Vaccine), cex = 2.5, size = 2) +
+     scale_y_log10() +
+     scale_colour_manual(values = c("gp120 MF59 ALVAC-SIV" = "blue",
+				    "gp120 alum ALVAC-SIV" = "red",
+				    "Controls" = "black")) +
+     labs(x = NULL,
+	  y = "ADCC titers SIVmac251") +
+     theme_minimal() +
+     theme(axis.ticks = element_line(size = 1.5),
+	   axis.line = element_line(size = 1.5),
+	   legend.pos  = "none",
+	   axis.title  = element_text(size = 15),
+	   axis.text   = element_text(size = 12, color = "black"),
+	   axis.text.x = element_text(angle = 45, hjust = 1),
+	   panel.grid = element_blank())
+										  
+wilcox.test(formula = `Serum-Guroff.ADCC titers` ~ Vaccine,
+	    data = filter(plotDF, Vaccine != "Controls"))
+```
+
+Print session info
+```{r, session-info}
+sessionInfo()
+```
